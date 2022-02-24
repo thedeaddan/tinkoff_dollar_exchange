@@ -8,14 +8,27 @@ import os
 
 #!!!!
 #Надо изменить на свои данные!!!
-vk = vk_api.VkApi(token = "TOKEN") #Токен ВК
+vk = vk_api.VkApi(token = "TOKEN VK") #Токен ВК
 peer_id = 2000000014 #ID Беседы куда бот будет писать уведомления
 #!!!!
 
 
 def vk_send(text):
 	print(text)
-	vk.method("messages.send",{"random_id":0,"message":text,"peer_id":peer_id})
+	try:
+		vk.method("messages.send",{"random_id":0,"message":text,"peer_id":peer_id})
+	except:
+		time.sleep(10)
+		vk.method("messages.send",{"random_id":0,"message":text,"peer_id":peer_id})
+
+def vk_edit(text):
+	print(text)
+	try:
+		vk.method("messages.edit",{"peer_id":peer_id,"message":text,"message_id": message_id,},)
+	except:
+		time.sleep(10)
+		vk.method("messages.edit",{"peer_id":peer_id,"message":text,"message_id": message_id,},)
+
 @timeout(10)
 def get_response():
 	return requests.get("https://api.tinkoff.ru/v1/currency_rates")
@@ -32,19 +45,23 @@ def get_dollar_exchange():
 		return 0,0
 
 def get_message():
-	return vk.method('messages.getHistory', {'peer_id': peer_id, 'count': 1})
+	try:
+		return vk.method("messages.getHistory", {"peer_id": peer_id, "count": 1})
+	except:
+		time.sleep(10)
+		return vk.method("messages.getHistory", {"peer_id": peer_id, "count": 1})
 
 def send_message_in_zeros(buy):
 	message = get_message()
-	message_id = message.get('items')[0].get('id')
-	message_text = message.get('items')[0].get('text')
-	if 'Курс $ на данный момент:' in message_text:
-		vk.method('messages.edit',{'peer_id':peer_id,'message': 'Курс $ на данный момент: '+str(buy)+" руб.",'message_id': message_id,},)
+	message_id = message.get("items")[0].get("id")
+	message_text = message.get("items")[0].get("text")
+	if "Курс $ на данный момент:" in message_text:
+		vk_edit("Курс $ на данный момент: "+str(buy)+" руб.")
 	else:
-		vk_send('Курс $ на данный момент: '+str(buy)+" руб.")
+		vk_send("Курс $ на данный момент: "+str(buy)+" руб.")
 old_buy = 0
 oldest_buy = 0
-highest = 86.50
+highest = 86.50	
 while True:
 	now = str(datetime.datetime.now())[:-7]
 	buy,sell = get_dollar_exchange()
