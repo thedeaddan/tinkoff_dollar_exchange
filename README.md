@@ -1,4 +1,5 @@
 # tinkoff_dollar_exchange
+![](https://komarev.com/ghpvc/?username=thedeaddan&label=Просмотры+репозитория&color=blueviolet&style=flat-square)  
 Бот пишущий в беседу актуальный курс доллара по бирже Tinkoff  
 ![image](https://user-images.githubusercontent.com/40400854/155562455-0628800a-e6d9-44c2-bdbf-9a163ce69d74.png)  
 Каждую минуту он пишет текущий курс и если последнее сообщение и его, то он его редактирует на актуальное  
