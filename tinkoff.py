@@ -1,15 +1,17 @@
-limport json
+import json
 import requests
 import time
 import vk_api
 import datetime
 from timeout import timeout
 import os
+import sys
 
 #!!!!
 #Надо изменить на свои данные!!!
-vk = vk_api.VkApi(token = "токен") #Токен ВК
-peer_id = 2000000014 #ID Беседы куда бот будет писать уведомления
+vk = vk_api.VkApi(token = "TOKEN") #Токен ВК
+peer_id = 199776748 # ID переписки, куда слать сообщения
+mode = "buy" # Режим работы buy - покупка $/ sell - продажа доллара
 #!!!!
 
 
@@ -40,16 +42,21 @@ def get_dollar_exchange():
 		jsons = json.loads(response.text)
 		buy = jsons["payload"]["rates"][1]["buy"]
 		sell = jsons["payload"]["rates"][1]["sell"]
+		for i in range(0,14):
+			get_response()
 		return buy,sell
-	except:
+	except Exception:
 		return 0,0
+	except KeyboardInterrupt:
+		sys.exit()
 
 def get_message():
 	try:
 		return vk.method("messages.getHistory", {"peer_id": peer_id, "count": 1})
-	except:
+	except Exception:
 		time.sleep(10)
 		return vk.method("messages.getHistory", {"peer_id": peer_id, "count": 1})
+
 
 def send_message_in_zeros(buy):
 	message = get_message()
@@ -60,40 +67,48 @@ def send_message_in_zeros(buy):
 	else:
 		vk_send("Курс $ на данный момент: "+str(buy)+" руб.")
 
-old_buy = 0
-oldest_buy = 0
-highest = 86.50	
+
+sell, buy = get_dollar_exchange()
+if mode == "buy":
+	vk_send("Бот запущен. Включён режим покупки доллара. Все ценники будут показываться за покупку 1$")
+	vk_send(f"Текущая цена покупки: {buy} руб.")
+else:
+	vk_send("Бот запущен. Включён режим продажи доллара. Все ценники будут показываться за продажу 1$")
+	vk_send(f"Текущая цена продажи: {sell} руб.")
+
+old = 0
+lower = 0
+upper = 0
 
 while True:
 	now = str(datetime.datetime.now())[:-7]
-	buy,sell = get_dollar_exchange()
-	if buy > old_buy and old_buy != 0 and buy != oldest_buy:
-		first_new = str(buy).split(".")[0]
-		second_new = str(buy).split(".")[1]
-		first_old = str(old_buy).split(".")[0]
-		second_old = str(old_buy).split(".")[1]
-		if int(first_new)>= 87:
-			vk_send("Цена $ выше 87 руб. Уведомляю о изменении и копеек:\nНовая цена: "+str(buy)+" руб.\nСтарая цена: "+str(old_buy)+" руб.")
-		if int(first_new) > int(first_old):
-			minus_rub = str(int(first_new) - int(first_old))
-			minus_kop = str(int(second_new) - int(second_old))
-			if buy > highest:
-				for i in range(0,4):
-					vk_send("Внимание!\n@all")
-					time.sleep(0.5)
-					vk_send("Цена выше локальной вершины!\nНовая цена: "+str(buy)+" руб.\nСтарая цена: "+str(old_buy)+" руб.")
-					time.sleep(0.5)
-				highest = buy
+	sell, buy = get_dollar_exchange()
+	if mode == "buy":
+		if buy < old and old != 0 and buy != 0:
+			if buy < lower and lower != 0 and buy != 0:
+				vk_send(f"Цена покупки упала ниже локального минимума!\nКупить 1 $ можно за {buy} руб.")
+				lower = buy
 			else:
-				vk_send("Цена $ выросла на "+minus_rub+" руб.\nНовая цена: "+str(buy)+" руб.\nСтарая цена: "+str(old_buy)+" руб.") 
-			for i in range(0,7):
-				get_response()
-			time.sleep(10)
-	else:
-		print(now+"|Цена не выросла: "+str(buy)+" руб.")
-	nowtime = now[11:].split(":")[2]
-	if nowtime == "00":
-		send_message_in_zeros(buy)
-	oldest_buy = old_buy
-	old_buy = buy
-	time.sleep(0.7)
+				vk_send(f"Цена покупки $ упала!\nНовая цена: {buy} руб.\nСтарая цена: {old} руб.")
+				old = buy
+		else:
+			print(now+"|Цена не упала: "+str(buy)+" руб.")
+		nowtime = now[11:].split(":")[2]
+		if nowtime in ["00","01","02"]:
+			send_message_in_zeros(buy)
+		old = buy
+	elif mode == "sell":
+		if sell > old and old != 0 and sell != 0:
+			if sell > upper and upper !=0 and sell != 0:
+				vk_send(f"Цена продажи поднялась выше локального максимума!\nПродать 1 $ можно за {sell} руб.")
+				upper = sell
+			else:
+				vk_send(f"Цена продажи $ поднялась!\nНовая цена: {sell} руб.\nСтарая цена: {sell} руб.")
+				old = sell
+		else:
+			print(now+"|Цена не выросла: "+str(sell)+" руб.")
+		nowtime = now[11:].split(":")[2]
+		if nowtime in ["00","01","02"]:
+			send_message_in_zeros(sell)
+		old = sell
+
