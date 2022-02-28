@@ -1,5 +1,8 @@
 # tinkoff_dollar_exchange
-Бот пишущий в беседу актуальный курс доллара по бирже Tinkoff  
-![image](https://user-images.githubusercontent.com/40400854/155562455-0628800a-e6d9-44c2-bdbf-9a163ce69d74.png)  
-Каждую минуту он пишет текущий курс и если последнее сообщение его, то он его редактирует на актуальное  
-![image](https://user-images.githubusercontent.com/40400854/155562557-be7ebddf-3394-432f-a954-b04b79cc72ac.png)
+Бот пишущий в диалог вк курс доллара.
+![image](https://user-images.githubusercontent.com/40400854/156064299-925afc91-fce8-47b7-8d2b-e652ed0692e4.png)  
+Бот имеет 2 режима. Продажа и покупка доллара.  
+Для изменения режима отредактируйте 14 строку кода:  
+```python
+    mode = "sell"
+```
