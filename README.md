@@ -18,7 +18,7 @@ peer_id = 123456789
 ```  
 После этих действий запускаем tinkoff.py:  
 ```python
-python3 /tinkoff/tinkoff.py
+python3 ~/tinkoff/tinkoff.py
 ```  
 Обязательно в папке с главным скриптом должен лежать файл
 ```
